@@ -1,0 +1,710 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hướng dẫn thực hành - VP9 MV LSB Stego</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: "Times New Roman", Times, serif;
+        font-size: 13pt;
+        line-height: 1.75;
+        color: #1a1a1a;
+        background: #f4f6f9;
+        padding: 30px 20px;
+      }
+      .page {
+        max-width: 900px;
+        margin: 0 auto;
+        background: #fff;
+        padding: 50px 60px;
+        border: 1px solid #d0d5dd;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+      }
+      .header {
+        text-align: center;
+        border-bottom: 3px solid #003087;
+        padding-bottom: 24px;
+        margin-bottom: 30px;
+      }
+      .institution {
+        font-size: 11pt;
+        color: #555;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+      h1 {
+        font-size: 20pt;
+        color: #003087;
+        margin-top: 8px;
+        font-weight: bold;
+      }
+      .subtitle {
+        font-size: 14pt;
+        color: #333;
+        margin-top: 14px;
+        font-style: italic;
+        background: #f1f3f6;
+        padding: 8px 24px;
+        display: inline-block;
+        border-radius: 4px;
+      }
+      .meta {
+        margin-top: 18px;
+        display: flex;
+        justify-content: center;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+      .badge {
+        display: inline-block;
+        padding: 4px 14px;
+        border-radius: 20px;
+        font-size: 10pt;
+        font-weight: bold;
+      }
+      .badge-medium {
+        background: #fff3cd;
+        color: #856404;
+        border: 1px solid #ffc107;
+      }
+      .badge-forensic {
+        background: #e8f4fd;
+        color: #0b5394;
+        border: 1px solid #8ec5f1;
+      }
+      .badge-codec {
+        background: #e6f4ea;
+        color: #216e39;
+        border: 1px solid #b7dfc4;
+      }
+      h2 {
+        font-size: 14pt;
+        color: #003087;
+        border-left: 5px solid #003087;
+        padding-left: 10px;
+        margin: 32px 0 12px;
+        font-weight: bold;
+      }
+      h3 {
+        font-size: 12.5pt;
+        color: #1a5276;
+        margin: 12px 0 8px;
+        font-weight: bold;
+      }
+      p {
+        margin-bottom: 10px;
+      }
+      ul,
+      ol {
+        margin: 8px 0 10px 24px;
+      }
+      li {
+        margin-bottom: 5px;
+      }
+      code {
+        background: #f0f0f0;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        padding: 2px 7px;
+        font-family: "Courier New", monospace;
+        font-size: 11pt;
+        color: #b03a2e;
+      }
+      pre {
+        background: #1e1e2e;
+        color: #cdd6f4;
+        border-radius: 8px;
+        padding: 16px 20px;
+        font-family: "Courier New", monospace;
+        font-size: 10.5pt;
+        overflow-x: auto;
+        margin: 10px 0 14px;
+        line-height: 1.6;
+        white-space: pre-wrap;
+      }
+      pre .cmd {
+        color: #89dceb;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 12px 0 18px;
+        font-size: 12pt;
+      }
+      th,
+      td {
+        border: 1px solid #cfd8e3;
+        padding: 12px 14px;
+        vertical-align: top;
+      }
+      th {
+        background: #003087;
+        color: #fff;
+        font-weight: bold;
+        text-align: left;
+      }
+      .box {
+        border-radius: 6px;
+        padding: 12px 16px;
+        margin: 14px 0;
+        font-size: 12pt;
+      }
+      .box-info {
+        background: #e8f4fd;
+        border-left: 5px solid #2196f3;
+      }
+      .box-warning {
+        background: #fff3cd;
+        border-left: 5px solid #ffc107;
+      }
+      .box-success {
+        background: #e8f5e9;
+        border-left: 5px solid #4caf50;
+      }
+      .box-danger {
+        background: #fdecea;
+        border-left: 5px solid #f44336;
+      }
+      .box-note {
+        background: #f3e5f5;
+        border-left: 5px solid #9c27b0;
+      }
+      .task-block {
+        border: 1px solid #b0c4de;
+        border-radius: 8px;
+        margin: 18px 0;
+        overflow: hidden;
+        background: #fff;
+      }
+      .task-header {
+        background: #003087;
+        color: #fff;
+        padding: 10px 18px;
+        font-size: 12.5pt;
+        font-weight: bold;
+      }
+      .task-body {
+        padding: 14px 18px;
+      }
+      .topology {
+        text-align: center;
+        margin: 18px 0;
+      }
+      .topo-diagram {
+        display: grid;
+        grid-template-columns: 1fr 120px 1fr 120px 1fr;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        background: #f8fafc;
+        border: 1px solid #cdd0d8;
+        border-radius: 10px;
+        padding: 24px 26px;
+        font-family: "Courier New", monospace;
+        font-size: 11pt;
+        width: 100%;
+      }
+      .topo-node {
+        min-width: 0;
+        background: #003087;
+        color: #fff;
+        border-radius: 8px;
+        padding: 14px 12px;
+        text-align: center;
+      }
+      .topo-node .node-label {
+        font-size: 10pt;
+        opacity: 0.9;
+      }
+      .topo-node .node-ip {
+        font-size: 9pt;
+        opacity: 0.75;
+        font-style: italic;
+      }
+      .topo-arrow {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        min-width: 0;
+      }
+      .topo-arrow .arrow-label {
+        font-size: 9.5pt;
+        font-weight: bold;
+        color: #c0392b;
+        white-space: nowrap;
+      }
+      .topo-arrow svg {
+        width: 100%;
+        max-width: 110px;
+        min-width: 80px;
+      }
+      .footer {
+        margin-top: 36px;
+        padding-top: 18px;
+        border-top: 1px solid #d0d5dd;
+        text-align: center;
+        color: #666;
+        font-size: 11pt;
+      }
+    </style>
+  </head>
+
+  <body>
+    <main class="page">
+      <section class="header">
+        <div class="institution">
+          Học viện Công nghệ Bưu chính Viễn thông — SecLab PTIT
+        </div>
+        <h1>HƯỚNG DẪN THỰC HÀNH</h1>
+        <div class="subtitle">
+          VP9 MV LSB Stego — Kỹ thuật Giấu tin bằng bit LSB trên Motion Vector
+        </div>
+        <div class="meta">
+          <span class="badge badge-medium">Mức độ: Trung bình</span>
+          <span class="badge badge-forensic">Steganography</span>
+          <span class="badge badge-codec">VP9 Video Codec</span>
+        </div>
+      </section>
+
+      <h2>1. Giới thiệu Lab</h2>
+      <table>
+        <tr>
+          <th>Thông tin</th>
+          <th>Chi tiết</th>
+        </tr>
+        <tr>
+          <td>Tên Lab</td>
+          <td><code>vp9-mv-lsb</code></td>
+        </tr>
+        <tr>
+          <td>Kỹ thuật</td>
+          <td>
+            Giấu tin trên bit có trọng số thấp nhất (LSB) của Vector chuyển
+            động.
+          </td>
+        </tr>
+        <tr>
+          <td>Công cụ</td>
+          <td>
+            <code>python3</code>, <code>ffmpeg</code>, <code>checkwork</code>.
+          </td>
+        </tr>
+        <tr>
+          <td>Kết quả cần đạt</td>
+          <td>
+            Trải qua toàn bộ quy trình từ trích xuất vector, nhúng tin đến đóng
+            gói lại video và giải mã thành công.
+          </td>
+        </tr>
+      </table>
+
+      <h3>Mục tiêu học tập</h3>
+      <ul>
+        <li>
+          Hiểu cơ chế lưu trữ Vector chuyển động (Motion Vector) trong chuẩn nén
+          video VP9.
+        </li>
+        <li>
+          Thực hành thao tác can thiệp vào các bit LSB của dữ liệu vector để
+          nhúng thông điệp.
+        </li>
+        <li>
+          Vận dụng <code>ffmpeg</code> và Python để bóc tách, tái cấu trúc
+          (repack) video mà không làm hỏng định dạng.
+        </li>
+      </ul>
+
+      <h2>2. Kịch bản</h2>
+      <div class="box box-info">
+        <strong>Tình huống:</strong><br />
+        Sinh viên đóng vai trò là một chuyên gia truyền tin mật. Sinh viên cần
+        giấu một đoạn văn bản nhạy cảm vào một file video định dạng VP9 sao cho
+        bằng mắt thường không thể phân biệt được video đã bị sửa đổi (Vô hình
+        thị giác).
+      </div>
+
+      <h3>Sơ đồ thực hiện (Local Workspace)</h3>
+      <div class="topology">
+        <div class="topo-diagram">
+          <div class="topo-node">
+            <div style="font-weight: bold; font-size: 11pt">Input Video</div>
+            <div class="node-label">input.webm</div>
+            <div class="node-ip">Clean VP9</div>
+          </div>
+          <div class="topo-arrow">
+            <div class="arrow-label">LSB Embed</div>
+            <svg
+              width="110"
+              height="16"
+              viewBox="0 0 110 16"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <line
+                x1="0"
+                y1="8"
+                x2="95"
+                y2="8"
+                stroke="#c0392b"
+                stroke-width="2"
+              />
+              <polygon points="95,3 110,8 95,13" fill="#c0392b" />
+            </svg>
+          </div>
+          <div class="topo-node">
+            <div style="font-weight: bold; font-size: 11pt">Stego Video</div>
+            <div class="node-label">stego_video.webm</div>
+            <div class="node-ip">Modified Motion Vector</div>
+          </div>
+          <div class="topo-arrow">
+            <div class="arrow-label">Extract</div>
+            <svg
+              width="110"
+              height="16"
+              viewBox="0 0 110 16"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <line
+                x1="0"
+                y1="8"
+                x2="95"
+                y2="8"
+                stroke="#c0392b"
+                stroke-width="2"
+              />
+              <polygon points="95,3 110,8 95,13" fill="#c0392b" />
+            </svg>
+          </div>
+          <div class="topo-node">
+            <div style="font-weight: bold; font-size: 11pt">Secret Message</div>
+            <div class="node-label">decode.stdout</div>
+            <div class="node-ip">ATTTD22PTIT</div>
+          </div>
+        </div>
+      </div>
+
+      <h2>3. Kiến thức bổ trợ</h2>
+      <h3>Motion Vector (MV) trong chuẩn nén VP9</h3>
+      <p>
+        VP9 nén video bằng cách loại bỏ các dư thừa về mặt thời gian giữa các
+        khung hình (frames). Thay vì lưu trữ toàn bộ điểm ảnh, VP9 tìm kiếm các
+        khối ảnh tương đồng ở khung hình trước đó và chỉ lưu lại khoảng cách di
+        chuyển. Khoảng cách này được biểu diễn bằng một Vector chuyển động
+        (Motion Vector) có tọa độ (x, y).
+      </p>
+
+      <h3>Quy tắc giấu tin trong bài</h3>
+      <p>
+        Thuật toán LSB (Least Significant Bit) sẽ thay thế bit cuối cùng của các
+        giá trị tọa độ Motion Vector bằng các bit của thông điệp bí mật. Vì MV
+        có giá trị nhỏ và sự thay đổi 1 bit ít ảnh hưởng đến mắt nhìn, đây là
+        một kênh giấu tin (covert channel) hiệu quả.
+      </p>
+      <ul>
+        <li>
+          <code>MV_LSB = 0</code> → Biểu diễn bit <code>0</code> của thông điệp.
+        </li>
+        <li>
+          <code>MV_LSB = 1</code> → Biểu diễn bit <code>1</code> của thông điệp.
+        </li>
+      </ul>
+
+      <h3>Bảng tùy chọn công cụ</h3>
+      <table>
+        <tr>
+          <th>Công cụ</th>
+          <th>Tùy chọn / Cú pháp</th>
+          <th>Mô tả tác dụng</th>
+        </tr>
+        <tr>
+          <td><code>ffmpeg</code></td>
+          <td><code>-hide_banner -i</code></td>
+          <td>Kiểm tra thông tin định dạng, codec của file video đầu vào.</td>
+        </tr>
+        <tr>
+          <td><code>python3</code></td>
+          <td><code>*.py</code></td>
+          <td>
+            Chạy các tool trích xuất, nhúng và giải mã thông điệp qua vector
+            chuyển động.
+          </td>
+        </tr>
+        <tr>
+          <td><code>cat</code></td>
+          <td><code>&lt;tên_file&gt;</code></td>
+          <td>Đọc và kiểm tra nội dung các file mã nguồn hoặc file văn bản.</td>
+        </tr>
+        <tr>
+          <td><code>echo</code></td>
+          <td><code>&gt; &lt;tên_file&gt;</code></td>
+          <td>Ghi chuỗi ký tự thông điệp vào file văn bản.</td>
+        </tr>
+      </table>
+
+      <h2>4. Tải và khởi động Lab</h2>
+      <p>
+        Chạy lệnh dưới đây để tải cấu hình bài Lab về máy Labtainers của sinh
+        viên:
+      </p>
+      <pre><span class="cmd">imodule https://github.com/cmdie0113/steganography-labtainer/raw/refs/heads/main/vp9-mv-lsb.tar</span></pre>
+      <p>
+        Khởi động lab (Dùng cờ <code>-r</code> để đảm bảo luôn kéo Image mới
+        nhất):
+      </p>
+      <pre><span class="cmd">labtainer -r vp9-mv-lsb</span></pre>
+
+      <h2>5. Các nhiệm vụ của bài thực hành</h2>
+      <p>
+        Sau khi khởi động lab, thao tác trong terminal của container
+        <code>student</code> tại thư mục làm việc hiện tại.
+      </p>
+      <div class="box box-warning">
+        <strong>Quy trình chung của bài:</strong><br /><code
+          >Chuẩn bị tin nhắn</code
+        >
+        → <code>Trích xuất Motion Vector</code> → <code>Nhúng tin (LSB)</code> →
+        <code>Đóng gói Video</code> → <code>Giải mã</code>
+      </div>
+
+      <div class="task-block">
+        <div class="task-header">
+          Nhiệm vụ 1 — Chuẩn bị dữ liệu và Trích xuất Vector
+        </div>
+        <div class="task-body">
+          <p>
+            <strong>Mục đích:</strong> Khởi tạo các file và thư mục cần thiết,
+            đồng thời sử dụng FFmpeg để phân tích các thông số cơ bản của video
+            gốc làm cơ sở cho các bước can thiệp.
+          </p>
+
+          <p>
+            <strong>Bước 1:</strong> Tạo file thông điệp bí mật chứa nội dung
+            cần truyền tải.
+          </p>
+          <pre><span class="cmd">echo "ATTTD22PTIT" > info.txt</span></pre>
+
+          <p><strong>Bước 2:</strong> Tạo thư mục chứa dữ liệu vector.</p>
+          <pre><span class="cmd">mkdir motion_data</span></pre>
+
+          <p>
+            <strong>Bước 3:</strong> Sử dụng FFmpeg để kiểm tra thông số của
+            file video đầu vào <code>input.webm</code>.
+          </p>
+          <pre><span class="cmd">ffmpeg -hide_banner -i input.webm</span></pre>
+
+          <p><strong>Kết quả cần thấy:</strong></p>
+          <pre>
+Input #0, matroska,webm, from 'input.webm':
+  Metadata:
+    COMPATIBLE_BRANDS: isomav01iso2mp41
+    MAJOR_BRAND     : isom
+    MINOR_VERSION   : 512
+    ENCODER         : Lavf61.7.100
+  Duration: 00:00:15.71, start: -0.007000, bitrate: 19922 kb/s
+    Stream #0:0: Video: vp9 (Profile 0), yuv420p(tv, bt709, progressive), 1920x1080, SAR 1:1 DAR 16:9, 30 fps, 30 tbr, 1k tbn, 1k tbc (default)</pre
+          >
+        </div>
+      </div>
+
+      <div class="task-block">
+        <div class="task-header">
+          Nhiệm vụ 2 — Trích xuất dữ liệu Motion Vector
+        </div>
+        <div class="task-body">
+          <p>
+            <strong>Mục đích:</strong> Bóc tách toàn bộ dữ liệu Motion Vector từ
+            video VP9 thô ra một thư mục riêng biệt để chuẩn bị cho quá trình
+            nhúng thông điệp.
+          </p>
+
+          <p>
+            <strong>Bước 1:</strong> Đọc mã nguồn của script trích xuất để hiểu
+            cách hệ thống bóc tách dữ liệu VP9.
+          </p>
+          <pre><span class="cmd">cat vp9_extractor.py</span></pre>
+
+          <p>
+            <strong>Bước 2:</strong> Chạy script để trích xuất các vector chuyển
+            động từ file video.
+          </p>
+          <pre><span class="cmd">python3 vp9_extractor.py</span></pre>
+
+          <p><strong>Kết quả cần thấy:</strong></p>
+          <pre>
+1. Dang phan tich cau truc VP9 Bitstream...
+-> Thanh cong! Da trich xuat MV tu [Số_lượng] frames vao 'extract_mv.txt'</pre
+          >
+        </div>
+      </div>
+
+      <div class="task-block">
+        <div class="task-header">Nhiệm vụ 3 — Nhúng thông điệp (Encode)</div>
+        <div class="task-body">
+          <p>
+            <strong>Mục đích:</strong> Can thiệp trực tiếp vào bit có trọng số
+            thấp nhất (LSB) của các Vector chuyển động để giấu đoạn thông điệp
+            bí mật một cách vô hình.
+          </p>
+
+          <p>
+            <strong>Bước 1:</strong> Xem mã nguồn thuật toán LSB để nắm rõ logic
+            can thiệp vào bit cuối cùng của MV.
+          </p>
+          <pre><span class="cmd">cat encode.py</span></pre>
+
+          <p>
+            <strong>Bước 2:</strong> Tiến hành nhúng thông điệp từ file
+            <code>info.txt</code> vào dữ liệu vector.
+          </p>
+          <pre><span class="cmd">python3 encode.py</span></pre>
+
+          <p><strong>Kết quả cần thấy:</strong></p>
+          <pre>
+2. Da giau thanh cong 88 bits thong diep vao file 'stego_mv.txt'</pre
+          >
+        </div>
+      </div>
+
+      <div class="task-block">
+        <div class="task-header">Nhiệm vụ 4 — Đóng gói Video (Repack)</div>
+        <div class="task-body">
+          <p>
+            <strong>Mục đích:</strong> Tái cấu trúc lại các khối dữ liệu Vector
+            đã bị biến đổi thành một file video VP9 hoàn chỉnh
+            (stego_video.webm) mà không làm hỏng định dạng ban đầu.
+          </p>
+
+          <p><strong>Bước 1:</strong> Đọc mã nguồn tái cấu trúc video.</p>
+          <pre><span class="cmd">cat repack_video.py</span></pre>
+
+          <p>
+            <strong>Bước 2:</strong> Gói các vector đã mang thông điệp mật trở
+            lại thành một file video stego hoàn chỉnh
+            (<code>stego_video.webm</code>).
+          </p>
+          <pre><span class="cmd">python3 repack_video.py</span></pre>
+
+          <p><strong>Kết quả cần thấy:</strong></p>
+          <pre>
+3. Dang remux (dong goi) stego_mv vao WebM container...
+-> Thanh cong! Da tao ra file 'stego_video.webm'
+   (Video nay mang tin an va hoan toan co the phat binh thuong)</pre
+          >
+        </div>
+      </div>
+
+      <div class="task-block">
+        <div class="task-header">
+          Nhiệm vụ 5 — Giải mã và Trích xuất (Decode)
+        </div>
+        <div class="task-body">
+          <p>
+            <strong>Mục đích:</strong> Kiểm chứng thuật toán giải mã bằng cách
+            trích ngược các bit LSB từ file video stego ra để khôi phục lại
+            chuỗi dữ liệu ẩn.
+          </p>
+
+          <p><strong>Bước 1:</strong> Kiểm tra thuật toán giải mã.</p>
+          <pre><span class="cmd">cat decode.py</span></pre>
+
+          <p>
+            <strong>Bước 2:</strong> Tiến hành giải mã dữ liệu từ file stego và
+            lưu kết quả đầu ra vào file <code>decode.stdout</code>.
+          </p>
+          <pre><span class="cmd">python3 decode.py > decode.stdout</span></pre>
+
+          <p><strong>Kết quả cần thấy:</strong></p>
+          <pre>
+(Không có thông báo hiển thị trên màn hình do output đã được chuyển hướng vào file decode.stdout)</pre
+          >
+        </div>
+      </div>
+
+      <div class="task-block">
+        <div class="task-header">Nhiệm vụ 6 — Đọc kết quả</div>
+        <div class="task-body">
+          <p>
+            <strong>Mục đích:</strong> Xác nhận tính toàn vẹn của dữ liệu bằng
+            cách so sánh trực tiếp thông điệp thu được với văn bản gốc ban đầu.
+          </p>
+
+          <p>
+            <strong>Bước 1:</strong> Đọc file kết quả để xem thông điệp có được
+            trích xuất nguyên vẹn hay không.
+          </p>
+          <pre><span class="cmd">cat decode.stdout</span></pre>
+          <div class="box box-note">
+            <strong>Lưu ý:</strong> So sánh kết quả in ra màn hình với nội dung
+            gốc mà sinh viên đã echo ở Nhiệm vụ 1.
+          </div>
+
+          <p><strong>Kết quả cần thấy:</strong></p>
+          <pre>
+4. Dang trich xuat va giai ma tu 'stego_video.webm'...
+-> Ket qua giai ma: ATTTD22PTIT</pre
+          >
+        </div>
+      </div>
+
+      <h2>6. Kiểm tra kết quả bài thực hành</h2>
+      <p>
+        Trên terminal <code>student@ubuntu</code>, sinh viên có thể chạy script
+        kiểm tra hệ thống:
+      </p>
+      <pre><span class="cmd">checkwork vp9-mv-lsb</span></pre>
+      <p>Kết quả kỳ vọng: tất cả nhiệm vụ đều hiển thị <code>Y</code>.</p>
+      <table>
+        <tr>
+          <th>Checkwork</th>
+          <th>Ý nghĩa</th>
+        </tr>
+        <tr>
+          <td><code>run_ffmpeg_info</code></td>
+          <td>Đã chạy lệnh kiểm tra thông số video bằng ffmpeg.</td>
+        </tr>
+        <tr>
+          <td><code>run_mkdir</code></td>
+          <td>Đã tạo thư mục <code>motion_data</code> để chứa dữ liệu.</td>
+        </tr>
+        <tr>
+          <td><code>run_extract_mv</code></td>
+          <td>Đã chạy script trích xuất vector chuyển động.</td>
+        </tr>
+        <tr>
+          <td><code>run_encode_script</code></td>
+          <td>Đã chạy script nhúng thông điệp vào dữ liệu vector.</td>
+        </tr>
+        <tr>
+          <td><code>found_secret</code></td>
+          <td>
+            Đã giải mã thành công thông điệp <code>ATTTD22PTIT</code> và lưu vào
+            <code>decode.stdout</code>.
+          </td>
+        </tr>
+      </table>
+
+      <div class="box box-success" style="margin-top: 18px">
+        <strong>Kết luận:</strong><br />
+        Bài lab giúp sinh viên nắm vững quy trình thực tế của kỹ thuật giấu tin
+        trên Vector chuyển động (Motion Vector) trong chuẩn nén VP9. Thông qua
+        việc trực tiếp can thiệp vào các bit LSB và tái cấu trúc (repack) video,
+        sinh viên hiểu được cách dữ liệu có thể bị nhúng ngầm một cách vô hình
+        mà không làm hỏng cấu trúc hay định dạng của file gốc.
+      </div>
+
+      <div class="footer">
+        Học viện Công nghệ Bưu chính Viễn thông — SecLab PTIT<br />
+        Bài thực hành được xây dựng theo mô hình Labtainer, phục vụ mục đích học
+        tập và nghiên cứu an toàn thông tin.
+      </div>
+    </main>
+  </body>
+</html>
