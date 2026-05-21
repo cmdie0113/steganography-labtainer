@@ -1,0 +1,787 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hướng dẫn thực hành - VP9 Robustness Test</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: "Times New Roman", Times, serif;
+        font-size: 13pt;
+        line-height: 1.75;
+        color: #1a1a1a;
+        background: #f4f6f9;
+        padding: 30px 20px;
+      }
+      .page {
+        max-width: 900px;
+        margin: 0 auto;
+        background: #fff;
+        padding: 50px 60px;
+        border: 1px solid #d0d5dd;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+      }
+      .header {
+        text-align: center;
+        border-bottom: 3px solid #003087;
+        padding-bottom: 24px;
+        margin-bottom: 30px;
+      }
+      .institution {
+        font-size: 11pt;
+        color: #555;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+      h1 {
+        font-size: 20pt;
+        color: #003087;
+        margin-top: 8px;
+        font-weight: bold;
+      }
+      .subtitle {
+        font-size: 14pt;
+        color: #333;
+        margin-top: 14px;
+        font-style: italic;
+        background: #f1f3f6;
+        padding: 8px 24px;
+        display: inline-block;
+        border-radius: 4px;
+      }
+      .meta {
+        margin-top: 18px;
+        display: flex;
+        justify-content: center;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+      .badge {
+        display: inline-block;
+        padding: 4px 14px;
+        border-radius: 20px;
+        font-size: 10pt;
+        font-weight: bold;
+      }
+      .badge-medium {
+        background: #fff3cd;
+        color: #856404;
+        border: 1px solid #ffc107;
+      }
+      .badge-forensic {
+        background: #e8f4fd;
+        color: #0b5394;
+        border: 1px solid #8ec5f1;
+      }
+      .badge-codec {
+        background: #e6f4ea;
+        color: #216e39;
+        border: 1px solid #b7dfc4;
+      }
+      h2 {
+        font-size: 14pt;
+        color: #003087;
+        border-left: 5px solid #003087;
+        padding-left: 10px;
+        margin: 32px 0 12px;
+        font-weight: bold;
+      }
+      h3 {
+        font-size: 12.5pt;
+        color: #1a5276;
+        margin: 12px 0 8px;
+        font-weight: bold;
+      }
+      p {
+        margin-bottom: 10px;
+      }
+      ul,
+      ol {
+        margin: 8px 0 10px 24px;
+      }
+      li {
+        margin-bottom: 5px;
+      }
+      code {
+        background: #f0f0f0;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        padding: 2px 7px;
+        font-family: "Courier New", monospace;
+        font-size: 11pt;
+        color: #b03a2e;
+      }
+      pre {
+        background: #1e1e2e;
+        color: #cdd6f4;
+        border-radius: 8px;
+        padding: 16px 20px;
+        font-family: "Courier New", monospace;
+        font-size: 10.5pt;
+        overflow-x: auto;
+        margin: 10px 0 14px;
+        line-height: 1.6;
+        white-space: pre-wrap;
+      }
+      pre .cmd {
+        color: #89dceb;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 12px 0 18px;
+        font-size: 12pt;
+      }
+      th,
+      td {
+        border: 1px solid #cfd8e3;
+        padding: 12px 14px;
+        vertical-align: top;
+      }
+      th {
+        background: #003087;
+        color: #fff;
+        font-weight: bold;
+        text-align: left;
+      }
+      .box {
+        border-radius: 6px;
+        padding: 12px 16px;
+        margin: 14px 0;
+        font-size: 12pt;
+      }
+      .box-info {
+        background: #e8f4fd;
+        border-left: 5px solid #2196f3;
+      }
+      .box-warning {
+        background: #fff3cd;
+        border-left: 5px solid #ffc107;
+      }
+      .box-success {
+        background: #e8f5e9;
+        border-left: 5px solid #4caf50;
+      }
+      .box-danger {
+        background: #fdecea;
+        border-left: 5px solid #f44336;
+      }
+      .box-note {
+        background: #f3e5f5;
+        border-left: 5px solid #9c27b0;
+      }
+      .task-block {
+        border: 1px solid #b0c4de;
+        border-radius: 8px;
+        margin: 18px 0;
+        overflow: hidden;
+        background: #fff;
+      }
+      .task-header {
+        background: #003087;
+        color: #fff;
+        padding: 10px 18px;
+        font-size: 12.5pt;
+        font-weight: bold;
+      }
+      .task-body {
+        padding: 14px 18px;
+      }
+      .topology {
+        text-align: center;
+        margin: 18px 0;
+      }
+      .topo-diagram {
+        display: grid;
+        grid-template-columns: 1fr 120px 1fr 120px 1fr;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        background: #f8fafc;
+        border: 1px solid #cdd0d8;
+        border-radius: 10px;
+        padding: 24px 26px;
+        font-family: "Courier New", monospace;
+        font-size: 11pt;
+        width: 100%;
+      }
+      .topo-node {
+        min-width: 0;
+        background: #003087;
+        color: #fff;
+        border-radius: 8px;
+        padding: 14px 12px;
+        text-align: center;
+      }
+      .topo-node .node-label {
+        font-size: 10pt;
+        opacity: 0.9;
+      }
+      .topo-node .node-ip {
+        font-size: 9pt;
+        opacity: 0.75;
+        font-style: italic;
+      }
+      .topo-arrow {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        min-width: 0;
+      }
+      .topo-arrow .arrow-label {
+        font-size: 9.5pt;
+        font-weight: bold;
+        color: #c0392b;
+        white-space: nowrap;
+      }
+      .topo-arrow svg {
+        width: 100%;
+        max-width: 110px;
+        min-width: 80px;
+      }
+      .footer {
+        margin-top: 36px;
+        padding-top: 18px;
+        border-top: 1px solid #d0d5dd;
+        text-align: center;
+        color: #666;
+        font-size: 11pt;
+      }
+    </style>
+  </head>
+
+  <body>
+    <main class="page">
+      <section class="header">
+        <div class="institution">
+          Học viện Công nghệ Bưu chính Viễn thông — SecLab PTIT
+        </div>
+        <h1>HƯỚNG DẪN THỰC HÀNH</h1>
+        <div class="subtitle">
+          VP9 Robustness Test — Đánh giá khả năng kháng nén của thông điệp ẩn
+          trong miền chuyển động của video VP9
+        </div>
+        <div class="meta">
+          <span class="badge badge-medium">Mức độ: Trung bình</span>
+          <span class="badge badge-forensic">Robustness Assessment</span>
+          <span class="badge badge-codec">VP9 Video Codec</span>
+        </div>
+      </section>
+
+      <h2>1. Giới thiệu Lab</h2>
+      <table>
+        <tr>
+          <th>Thông tin</th>
+          <th>Chi tiết</th>
+        </tr>
+        <tr>
+          <td>Tên Lab</td>
+          <td><code>vp9-robustness-test</code></td>
+        </tr>
+        <tr>
+          <td>Kỹ thuật</td>
+          <td>
+            Đánh giá độ bền (Robustness) của thuật toán giấu tin vào Miền chuyển
+            động của video VP9 bằng cách đo lường Tỉ lệ lỗi bit (BER) sau quá
+            trình nén suy hao.
+          </td>
+        </tr>
+        <tr>
+          <td>Công cụ</td>
+          <td>
+            <code>python3</code>, <code>ffmpeg</code>, <code>nano</code>,
+            <code>cat</code>, <code>checkwork</code>.
+          </td>
+        </tr>
+        <tr>
+          <td>Kết quả cần đạt</td>
+          <td>
+            Thực hiện thành công cuộc tấn công nén video, chỉnh sửa script trích
+            xuất và đo lường chính xác sự suy hao của thông điệp.
+          </td>
+        </tr>
+      </table>
+
+      <h3>Mục tiêu học tập</h3>
+      <ul>
+        <li>
+          Kiểm chứng giới hạn bảo mật của kỹ thuật giấu tin (Steganography) khi
+          đối mặt với các bộ lọc nén trong môi trường mạng thực tế.
+        </li>
+        <li>
+          Vận dụng <code>ffmpeg</code> để mô phỏng quá trình nén suy hao
+          (Re-encode) và giảm băng thông (bitrate) của video.
+        </li>
+        <li>
+          Thực hành thao tác chỉnh sửa mã nguồn Python trực tiếp trên terminal
+          và tính toán chỉ số BER (Bit Error Rate).
+        </li>
+      </ul>
+
+      <h2>2. Kịch bản</h2>
+      <div class="box box-info">
+        <strong>Tình huống:</strong><br />
+        Sinh viên đóng vai trò là một người kiểm định (Analyst). Sinh viên sẽ
+        chủ động "tấn công" file video đã giấu tin bằng cách ép nó nén lại với
+        một băng thông rất thấp. Mục tiêu là kiểm chứng xem liệu thông điệp bí
+        mật có tồn tại được sau khi cấu trúc nén gốc bị bóp méo hay không.
+      </div>
+
+      <h3>Sơ đồ thực hiện (Robustness Pipeline)</h3>
+      <div class="topology">
+        <div class="topo-diagram">
+          <div class="topo-node">
+            <div style="font-weight: bold; font-size: 11pt">Stego Video</div>
+            <div class="node-label">stego_video_dir.webm</div>
+            <div class="node-ip">Chứa thông điệp</div>
+          </div>
+          <div class="topo-arrow">
+            <div class="arrow-label">Re-encode</div>
+            <svg
+              width="110"
+              height="16"
+              viewBox="0 0 110 16"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <line
+                x1="0"
+                y1="8"
+                x2="95"
+                y2="8"
+                stroke="#c0392b"
+                stroke-width="2"
+              />
+              <polygon points="95,3 110,8 95,13" fill="#c0392b" />
+            </svg>
+          </div>
+          <div class="topo-node">
+            <div style="font-weight: bold; font-size: 11pt">Attacked Video</div>
+            <div class="node-label">attack_video.webm</div>
+            <div class="node-ip">Nén suy hao (200k)</div>
+          </div>
+          <div class="topo-arrow">
+            <div class="arrow-label">Extract & Compare</div>
+            <svg
+              width="110"
+              height="16"
+              viewBox="0 0 110 16"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <line
+                x1="0"
+                y1="8"
+                x2="95"
+                y2="8"
+                stroke="#c0392b"
+                stroke-width="2"
+              />
+              <polygon points="95,3 110,8 95,13" fill="#c0392b" />
+            </svg>
+          </div>
+          <div class="topo-node">
+            <div style="font-weight: bold; font-size: 11pt">BER Result</div>
+            <div class="node-label">ber.stdout</div>
+            <div class="node-ip">Tỉ lệ lỗi bit</div>
+          </div>
+        </div>
+      </div>
+
+      <h2>3. Kiến thức bổ trợ</h2>
+      <h3>Tấn công nén suy hao (Re-encode Attack) và BER</h3>
+      <p>
+        Khi video được tải lên các nền tảng chia sẻ, nó thường bị nén lại
+        (Re-encode) để giảm dung lượng. Quá trình này sẽ tính toán lại toàn bộ
+        quỹ đạo của Vector chuyển động. Để đánh giá sức chịu đựng của thuật toán
+        giấu tin, ta sử dụng chỉ số <strong>BER (Bit Error Rate)</strong>: Tỉ lệ
+        phần trắng các bit dữ liệu bị sai lệch hoặc phá hủy so với lúc mới
+        nhúng.
+      </p>
+
+      <h3>Bảng tùy chọn công cụ</h3>
+      <table>
+        <tr>
+          <th>Công cụ</th>
+          <th>Tùy chọn / Cú pháp</th>
+          <th>Mô tả tác dụng</th>
+        </tr>
+        <tr>
+          <td><code>ffmpeg</code></td>
+          <td><code>-c:v libvpx-vp9 -b:v 200k</code></td>
+          <td>
+            Nén lại video bằng codec VP9 với giới hạn băng thông là 200
+            kilobits/giây.
+          </td>
+        </tr>
+        <tr>
+          <td><code>nano</code></td>
+          <td><code>&lt;tên_file&gt;</code></td>
+          <td>
+            Trình soạn thảo văn bản trong Terminal để trực tiếp sửa đổi mã
+            nguồn.
+          </td>
+        </tr>
+        <tr>
+          <td><code>cat</code></td>
+          <td><code>&lt;tên_file&gt;</code></td>
+          <td>Đọc và kiểm tra nội dung các file mã nguồn hoặc file văn bản.</td>
+        </tr>
+        <tr>
+          <td><code>python3</code></td>
+          <td><code>*.py</code></td>
+          <td>Chạy các kịch bản trích xuất, nhúng và so sánh dữ liệu.</td>
+        </tr>
+      </table>
+
+      <h2>4. Tải và khởi động Lab</h2>
+      <p>
+        Chạy lệnh dưới đây để tải cấu hình bài Lab về máy Labtainers của sinh
+        viên:
+      </p>
+      <pre><span class="cmd">imodule https://github.com/cmdie0113/steganography-labtainer/raw/refs/heads/main/vp9-robustness-test.tar</span></pre>
+      <p>
+        Khởi động lab (Dùng cờ <code>-r</code> để đảm bảo luôn kéo Image mới
+        nhất):
+      </p>
+      <pre><span class="cmd">labtainer -r vp9-robustness-test</span></pre>
+
+      <h2>5. Các nhiệm vụ của bài thực hành</h2>
+      <p>
+        Sau khi khởi động lab, thao tác trong terminal của container
+        <code>student</code> tại thư mục làm việc hiện tại.
+      </p>
+      <div class="box box-warning">
+        <strong>Quy trình chung của bài:</strong><br /><code
+          >Tái tạo file Stego</code
+        >
+        → <code>Tấn công (Re-encode)</code> → <code>Sửa mã nguồn</code> →
+        <code>Trích xuất lại</code> → <code>Đo lường lỗi (BER)</code>
+      </div>
+
+      <div class="task-block">
+        <div class="task-header">
+          Nhiệm vụ 1 — Kiểm tra thông số video đầu vào
+        </div>
+        <div class="task-body">
+          <p>
+            <strong>Mục đích:</strong> Dùng FFmpeg để xem thông tin codec và
+            bitrate ban đầu của video gốc.
+          </p>
+          <p>
+            <strong>Bước 1:</strong> Sử dụng FFmpeg để kiểm tra thông số file
+            video cấu hình.
+          </p>
+          <pre><span class="cmd">ffmpeg -hide_banner -i input.webm</span></pre>
+          <p>
+            <strong>Kết quả cần thấy:</strong>
+          </p>
+          <pre>
+Input #0, matroska,webm, from 'input.webm':
+  Metadata:
+    COMPATIBLE_BRANDS: isomav01iso2mp41
+    ENCODER         : Lavf...
+  Duration: 00:00:15.71, start: -0.007000, bitrate: 19922 kb/s
+    Stream #0:0: Video: vp9 (Profile 0), yuv420p, 1920x1080, 30 fps, 30 tbr</pre
+          >
+        </div>
+      </div>
+
+      <div class="task-block">
+        <div class="task-header">
+          Nhiệm vụ 2 — Trích xuất Vector chuyển động gốc
+        </div>
+        <div class="task-body">
+          <p>
+            <strong>Mục đích:</strong> Bóc tách toàn bộ dữ liệu Motion Vector từ
+            video VP9 thô phục vụ quá trình làm vật mang dữ liệu ẩn.
+          </p>
+          <p>
+            <strong>Bước 1:</strong> Đọc mã nguồn của script trích xuất để hiểu
+            cấu trúc thuật toán Optical Flow của hệ thống.
+          </p>
+          <pre><span class="cmd">cat vp9_extractor.py</span></pre>
+          <p>
+            <strong>Bước 2:</strong> Chạy script để bóc tách tọa độ vector từ
+            video gốc.
+          </p>
+          <pre><span class="cmd">python3 vp9_extractor.py</span></pre>
+          <p>
+            <strong>Kết quả cần thấy:</strong>
+          </p>
+          <pre>
+-> Trich xuat duoc [số lượng] Vector chuyen dong that vao 'extract_mv.txt'</pre
+          >
+        </div>
+      </div>
+
+      <div class="task-block">
+        <div class="task-header">
+          Nhiệm vụ 3 — Nhúng thông điệp mật bằng kỹ thuật Ép hướng
+        </div>
+        <div class="task-body">
+          <p>
+            <strong>Mục đích:</strong> Can thiệp biến đổi dấu của các giá trị
+            tọa độ Motion Vector nhằm giấu chuỗi văn bản bí mật.
+          </p>
+          <p>
+            <strong>Bước 1:</strong> Đọc mã nguồn để hiểu logic lật dấu vector
+            (âm đại diện bit 0, dương đại diện bit 1).
+          </p>
+          <pre><span class="cmd">cat encode.py</span></pre>
+          <p>
+            <strong>Bước 2:</strong> Thực thi script nhúng thông điệp mật vào
+            tệp dữ liệu vừa trích xuất.
+          </p>
+          <pre><span class="cmd">python3 encode.py</span></pre>
+          <p>
+            <strong>Kết quả cần thấy:</strong>
+          </p>
+          <pre>Da giau [số lượng] bits vao Vector that.</pre>
+        </div>
+      </div>
+
+      <div class="task-block">
+        <div class="task-header">
+          Nhiệm vụ 4 — Đóng gói dữ liệu thành Video hoàn chỉnh
+        </div>
+        <div class="task-body">
+          <p>
+            <strong>Mục đích:</strong> Tái cấu trúc chuỗi vector bị biến dạng
+            vào file WebM để hoàn thiện tệp video ẩn mã.
+          </p>
+          <p>
+            <strong>Bước 1:</strong> Đọc mã nguồn script đóng gói để kiểm tra
+            cấu trúc nhúng nhị phân (Append Binary).
+          </p>
+          <pre><span class="cmd">cat repack_video.py</span></pre>
+          <p>
+            <strong>Bước 2:</strong> Chạy script để sinh file video mang tin mật
+            đầu ra.
+          </p>
+          <pre><span class="cmd">python3 repack_video.py</span></pre>
+          <p>
+            <strong>Kết quả cần thấy:</strong>
+          </p>
+          <pre>
+-> Thanh cong! Da tao ra video an tin: 'stego_video_dir.webm'</pre
+          >
+        </div>
+      </div>
+
+      <div class="task-block">
+        <div class="task-header">
+          Nhiệm vụ 5 — Tiến hành cuộc tấn công nén suy hao (Re-encode Attack)
+        </div>
+        <div class="task-body">
+          <p>
+            <strong>Mục đích:</strong> Sử dụng công cụ FFmpeg để nén bóp bitrate
+            của video stego xuống 200k, giả lập quá trình truyền tải tải nén
+            trên mạng.
+          </p>
+          <p>
+            <strong>Bước 1:</strong> Chạy lệnh FFmpeg thực hiện tái mã hóa nén
+            phá hủy cấu trúc video.
+          </p>
+          <pre><span class="cmd">ffmpeg -hide_banner -i stego_video_dir.webm -c:v libvpx-vp9 -b:v 200k attack_video.webm</span></pre>
+          <p>
+            <strong>Kết quả cần thấy:</strong>
+          </p>
+          <pre>
+frame=  471 fps= 43 q=0.0 size=    384kB time=00:00:15.70 bitrate= 200.1kbits/s speed=1.4x
+video:380kB audio:0kB subtitle:0kB other streams:0kB global headers:0kB muxing overhead: 0.95%</pre
+          >
+        </div>
+      </div>
+
+      <div class="task-block">
+        <div class="task-header">
+          Nhiệm vụ 6 — Sửa đổi cấu hình tệp mã nguồn Extractor
+        </div>
+        <div class="task-body">
+          <p>
+            <strong>Mục đích:</strong> Sử dụng trình chỉnh sửa văn bản Nano để
+            thay đổi mục tiêu file phân tích từ video gốc sang video bị nén.
+          </p>
+          <p>
+            <strong>Bước 1:</strong> Mở tệp mã nguồn
+            <code>vp9_extractor.py</code>.
+          </p>
+          <pre><span class="cmd">nano vp9_extractor.py</span></pre>
+          <div class="box box-note">
+            <strong>Yêu cầu chỉnh sửa:</strong> Di chuyển xuống dòng cuối cùng
+            của file, sửa đổi tham số đầu vào:<br />
+            - Thay thế:
+            <code>extract_real_mvs("input.webm", "extract_mv.txt")</code><br />
+            - Trở thành:
+            <code>extract_real_mvs("attack_video.webm", "attack_mv.txt")</code
+            ><br />
+            <i
+              >(Sử dụng tổ hợp <code>Ctrl+O</code> -> <code>Enter</code> để lưu
+              file, và <code>Ctrl+X</code> để quay về terminal)</i
+            >
+          </div>
+          <p>
+            <strong>Kết quả cần thấy:</strong> Trình soạn thảo đóng lại và dấu
+            nhắc lệnh shell terminal quay lại trạng thái bình thường.
+          </p>
+        </div>
+      </div>
+
+      <div class="task-block">
+        <div class="task-header">
+          Nhiệm vụ 7 — Trích xuất Motion Vector từ video bị nén suy hao
+        </div>
+        <div class="task-body">
+          <p>
+            <strong>Mục đích:</strong> Thực thi lại công cụ trích xuất nhằm thu
+            gom các vector đã bị bộ nén FFmpeg tính toán thay đổi.
+          </p>
+          <p>
+            <strong>Bước 1:</strong> Chạy lại file script extractor sau khi đã
+            cấu hình chuyển hướng file đầu vào.
+          </p>
+          <pre><span class="cmd">python3 vp9_extractor.py</span></pre>
+          <p>
+            <strong>Kết quả cần thấy:</strong>
+          </p>
+          <pre>
+-> Trich xuat duoc [Số_lượng] Vector chuyen dong that vao 'attack_mv.txt'</pre
+          >
+        </div>
+      </div>
+
+      <div class="task-block">
+        <div class="task-header">
+          Nhiệm vụ 8 — Phân tích và tính toán tỉ lệ lỗi dữ liệu bit (BER)
+        </div>
+        <div class="task-body">
+          <p>
+            <strong>Mục đích:</strong> Đối chiếu dữ liệu vector mang tin và
+            vector sau nén để tính toán định lượng phần trăm bit bị sai hướng.
+          </p>
+          <p>
+            <strong>Bước 1:</strong> Sử dụng lệnh đọc nội dung mã nguồn của
+            script đánh giá BER.
+          </p>
+          <pre><span class="cmd">cat calculate_ber.py</span></pre>
+          <p>
+            <strong>Bước 2:</strong> Chạy thuật toán đo sai lệch bit và chuyển
+            hướng toàn bộ kết quả xuất ra vào tệp văn bản.
+          </p>
+          <pre><span class="cmd">python3 calculate_ber.py > ber.stdout</span></pre>
+          <p>
+            <strong>Kết quả cần thấy:</strong> Hệ thống thực thi ngầm và không
+            hiển thị thông báo lỗi nào trên terminal.
+          </p>
+        </div>
+      </div>
+
+      <div class="task-block">
+        <div class="task-header">
+          Nhiệm vụ 9 — Đọc báo cáo kết quả kiểm định độ bền vững thông điệp
+        </div>
+        <div class="task-body">
+          <p>
+            <strong>Mục đích:</strong> Kiểm tra nội dung tệp tin đầu ra để phân
+            tích kết luận về khả năng sống sót của thuật toán giấu tin.
+          </p>
+          <p><strong>Bước 1:</strong> Đọc nội dung file log kết quả BER.</p>
+          <pre><span class="cmd">cat ber.stdout</span></pre>
+          <p>
+            <strong>Kết quả cần thấy:</strong>
+          </p>
+          <pre>=> Ti le loi bit (BER): [Tỉ_lệ_lỗi]%</pre>
+        </div>
+      </div>
+
+      <h2>6. Kiểm tra kết quả bài thực hành</h2>
+      <p>
+        Trên terminal <code>student@ubuntu</code>, sinh viên tiến hành chạy
+        script kiểm tra hệ thống tự động chấm điểm bài lab:
+      </p>
+      <pre><span class="cmd">checkwork vp9-robustness-test</span></pre>
+      <p>
+        Kết quả kỳ vọng: tất cả nhiệm vụ đều hiển thị trạng thái tích cực
+        <code>Y</code>.
+      </p>
+      <table>
+        <tr>
+          <th>Checkwork</th>
+          <th>Ý nghĩa</th>
+        </tr>
+        <tr>
+          <td><code>check_info</code></td>
+          <td>
+            Xác nhận sinh viên đã dùng lệnh kiểm tra thông số video gốc bằng
+            ffmpeg.
+          </td>
+        </tr>
+        <tr>
+          <td><code>run_encode</code></td>
+          <td>
+            Xác nhận đã chạy script nhúng mã hóa thông điệp mật thành công.
+          </td>
+        </tr>
+        <tr>
+          <td><code>run_repack</code></td>
+          <td>
+            Xác nhận đã chạy script đóng gói nhị phân thành công video mang tin
+            stego.
+          </td>
+        </tr>
+        <tr>
+          <td><code>run_attack</code></td>
+          <td>
+            Xác nhận đã thực thi thành công lệnh FFmpeg thực hiện tấn công nén
+            bitrate 200k.
+          </td>
+        </tr>
+        <tr>
+          <td><code>edit_extractor</code></td>
+          <td>
+            Xác nhận sinh viên đã sửa đổi tham số đầu vào trong mã nguồn
+            extractor bằng nano.
+          </td>
+        </tr>
+        <tr>
+          <td><code>run_extractor</code></td>
+          <td>
+            Xác nhận đã chạy lại script trích xuất để lấy vector từ video bị tấn
+            công nén.
+          </td>
+        </tr>
+        <tr>
+          <td><code>run_ber</code></td>
+          <td>
+            Xác nhận đã chạy thuật toán tính toán và ghi thành công Tỉ lệ lỗi
+            bit (BER) ra file log.
+          </td>
+        </tr>
+      </table>
+
+      <div class="box box-success" style="margin-top: 18px">
+        <strong>Kết luận:</strong><br />
+        Bài lab này cung cấp cái nhìn thực tế về điểm yếu của các phương pháp
+        giấu tin cơ bản (Fragile Steganography). Khi video trải qua quá trình
+        nén lại (Re-encode), bộ mã hóa sẽ tính toán lại các khối dự báo và sửa
+        đổi quỹ đạo Vector, từ đó vô tình phá hủy thông điệp được giấu bên
+        trong. Việc sử dụng chỉ số BER là một phương pháp khoa học tiêu chuẩn để
+        đánh giá khả năng kháng nén (Robustness) của các thuật toán
+        steganography.
+      </div>
+
+      <div class="footer">
+        Học viện Công nghệ Bưu chính Viễn thông — SecLab PTIT<br />
+        Bài thực hành được xây dựng theo mô hình Labtainer, phục vụ mục đích học
+        tập và nghiên cứu an toàn thông tin.
+      </div>
+    </main>
+  </body>
+</html>

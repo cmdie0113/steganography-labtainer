@@ -1,0 +1,753 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hướng dẫn thực hành - VP9 MV Predictor Stego</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: "Times New Roman", Times, serif;
+        font-size: 13pt;
+        line-height: 1.75;
+        color: #1a1a1a;
+        background: #f4f6f9;
+        padding: 30px 20px;
+      }
+      .page {
+        max-width: 900px;
+        margin: 0 auto;
+        background: #fff;
+        padding: 50px 60px;
+        border: 1px solid #d0d5dd;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+      }
+      .header {
+        text-align: center;
+        border-bottom: 3px solid #003087;
+        padding-bottom: 24px;
+        margin-bottom: 30px;
+      }
+      .institution {
+        font-size: 11pt;
+        color: #555;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+      h1 {
+        font-size: 20pt;
+        color: #003087;
+        margin-top: 8px;
+        font-weight: bold;
+      }
+      .subtitle {
+        font-size: 14pt;
+        color: #333;
+        margin-top: 14px;
+        font-style: italic;
+        background: #f1f3f6;
+        padding: 8px 24px;
+        display: inline-block;
+        border-radius: 4px;
+      }
+      .meta {
+        margin-top: 18px;
+        display: flex;
+        justify-content: center;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+      .badge {
+        display: inline-block;
+        padding: 4px 14px;
+        border-radius: 20px;
+        font-size: 10pt;
+        font-weight: bold;
+      }
+      .badge-medium {
+        background: #fff3cd;
+        color: #856404;
+        border: 1px solid #ffc107;
+      }
+      .badge-forensic {
+        background: #e8f4fd;
+        color: #0b5394;
+        border: 1px solid #8ec5f1;
+      }
+      .badge-codec {
+        background: #e6f4ea;
+        color: #216e39;
+        border: 1px solid #b7dfc4;
+      }
+      h2 {
+        font-size: 14pt;
+        color: #003087;
+        border-left: 5px solid #003087;
+        padding-left: 10px;
+        margin: 32px 0 12px;
+        font-weight: bold;
+      }
+      h3 {
+        font-size: 12.5pt;
+        color: #1a5276;
+        margin: 12px 0 8px;
+        font-weight: bold;
+      }
+      p {
+        margin-bottom: 10px;
+      }
+      ul,
+      ol {
+        margin: 8px 0 10px 24px;
+      }
+      li {
+        margin-bottom: 5px;
+      }
+      code {
+        background: #f0f0f0;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        padding: 2px 7px;
+        font-family: "Courier New", monospace;
+        font-size: 11pt;
+        color: #b03a2e;
+      }
+      pre {
+        background: #1e1e2e;
+        color: #cdd6f4;
+        border-radius: 8px;
+        padding: 16px 20px;
+        font-family: "Courier New", monospace;
+        font-size: 10.5pt;
+        overflow-x: auto;
+        margin: 10px 0 14px;
+        line-height: 1.6;
+        white-space: pre-wrap;
+      }
+      pre .cmd {
+        color: #89dceb;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 12px 0 18px;
+        font-size: 12pt;
+      }
+      th,
+      td {
+        border: 1px solid #cfd8e3;
+        padding: 12px 14px;
+        vertical-align: top;
+      }
+      th {
+        background: #003087;
+        color: #fff;
+        font-weight: bold;
+        text-align: left;
+      }
+      .box {
+        border-radius: 6px;
+        padding: 12px 16px;
+        margin: 14px 0;
+        font-size: 12pt;
+      }
+      .box-info {
+        background: #e8f4fd;
+        border-left: 5px solid #2196f3;
+      }
+      .box-warning {
+        background: #fff3cd;
+        border-left: 5px solid #ffc107;
+      }
+      .box-success {
+        background: #e8f5e9;
+        border-left: 5px solid #4caf50;
+      }
+      .box-danger {
+        background: #fdecea;
+        border-left: 5px solid #f44336;
+      }
+      .box-note {
+        background: #f3e5f5;
+        border-left: 5px solid #9c27b0;
+      }
+      .task-block {
+        border: 1px solid #b0c4de;
+        border-radius: 8px;
+        margin: 18px 0;
+        overflow: hidden;
+        background: #fff;
+      }
+      .task-header {
+        background: #003087;
+        color: #fff;
+        padding: 10px 18px;
+        font-size: 12.5pt;
+        font-weight: bold;
+        display: flex;
+        justify-content: space-between;
+      }
+      .task-header .machine-tag {
+        background: #ffc107;
+        color: #000;
+        padding: 2px 10px;
+        border-radius: 12px;
+        font-size: 10pt;
+      }
+      .task-body {
+        padding: 14px 18px;
+      }
+      .topology {
+        text-align: center;
+        margin: 18px 0;
+      }
+      .topo-diagram {
+        display: grid;
+        grid-template-columns: 1fr 120px 1fr;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        background: #f8fafc;
+        border: 1px solid #cdd0d8;
+        border-radius: 10px;
+        padding: 24px 26px;
+        font-family: "Courier New", monospace;
+        font-size: 11pt;
+        width: 100%;
+      }
+      .topo-node {
+        min-width: 0;
+        background: #003087;
+        color: #fff;
+        border-radius: 8px;
+        padding: 14px 12px;
+        text-align: center;
+      }
+      .topo-node .node-label {
+        font-size: 10pt;
+        opacity: 0.9;
+      }
+      .topo-node .node-ip {
+        font-size: 9pt;
+        opacity: 0.75;
+        font-style: italic;
+      }
+      .topo-arrow {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        min-width: 0;
+      }
+      .topo-arrow .arrow-label {
+        font-size: 9.5pt;
+        font-weight: bold;
+        color: #c0392b;
+        white-space: nowrap;
+      }
+      .topo-arrow svg {
+        width: 100%;
+        max-width: 110px;
+        min-width: 80px;
+      }
+      .footer {
+        margin-top: 36px;
+        padding-top: 18px;
+        border-top: 1px solid #d0d5dd;
+        text-align: center;
+        color: #666;
+        font-size: 11pt;
+      }
+    </style>
+  </head>
+
+  <body>
+    <main class="page">
+      <section class="header">
+        <div class="institution">
+          Học viện Công nghệ Bưu chính Viễn thông — SecLab PTIT
+        </div>
+        <h1>HƯỚNG DẪN THỰC HÀNH</h1>
+        <div class="subtitle">
+          VP9 MV Predictor Stego — Giấu tin vào miền Dự đoán Vector
+        </div>
+        <div class="meta">
+          <span class="badge badge-medium">Mức độ: Trung bình</span>
+          <span class="badge badge-forensic">Steganography</span>
+          <span class="badge badge-codec">VP9 Codec</span>
+        </div>
+      </section>
+
+      <h2>1. Giới thiệu Lab</h2>
+      <table>
+        <tr>
+          <th>Thông tin</th>
+          <th>Chi tiết</th>
+        </tr>
+        <tr>
+          <td>Tên Lab</td>
+          <td><code>vp9-mv-predictor-steg</code></td>
+        </tr>
+        <tr>
+          <td>Kỹ thuật</td>
+          <td>
+            Giấu tin ẩn bằng cách thao túng quyết định chế độ Bộ dự đoán
+            (Predictor Mode) của Motion Vector.
+          </td>
+        </tr>
+        <tr>
+          <td>Công cụ</td>
+          <td>
+            <code>python3</code>, <code>ffmpeg</code>, <code>http.server</code>,
+            <code>wget</code>, <code>checkwork</code>.
+          </td>
+        </tr>
+        <tr>
+          <td>Kết quả cần đạt</td>
+          <td>
+            Trải qua toàn bộ quy trình từ trích xuất tệp ứng viên, nhúng thông
+            điệp vào miền dự đoán đến đóng gói lại video và giải mã thành công.
+          </td>
+        </tr>
+      </table>
+
+      <h3>Mục tiêu học tập</h3>
+      <ul>
+        <li>
+          Nắm bắt cơ chế chọn Bộ dự đoán (Predictor selection) trong chuẩn nén
+          video VP9 (sự khác biệt giữa <code>nearest</code> và
+          <code>near</code>).
+        </li>
+        <li>
+          Thiết lập mô hình mạng Client-Server cơ bản để truyền tải tệp tin kỹ
+          thuật số đã được bảo mật qua mạng IP.
+        </li>
+      </ul>
+
+      <h2>2. Kịch bản</h2>
+      <div class="box box-info">
+        <strong>Tình huống:</strong><br />
+        Sinh viên đóng vai trò là một chuyên gia truyền tin mật. Sinh viên cần
+        giấu một đoạn văn bản nhạy cảm vào một file video định dạng VP9 sao cho
+        bằng mắt thường không thể phân biệt được video đã bị sửa đổi (Vô hình
+        thị giác). Thuật toán lần này sẽ can thiệp trực tiếp vào việc lựa chọn
+        chế độ của bộ dự đoán chuyển động (Prediction Domain).
+      </div>
+
+      <h3>Sơ đồ mạng truyền tải</h3>
+      <div class="topology">
+        <div class="topo-diagram">
+          <div class="topo-node">
+            <div style="font-weight: bold; font-size: 11pt">Encoder</div>
+            <div class="node-label">Nhúng theo Dự đoán</div>
+            <div class="node-ip">Port: 1234</div>
+          </div>
+          <div class="topo-arrow">
+            <div class="arrow-label">stego_video_dir.webm</div>
+            <svg
+              width="110"
+              height="16"
+              viewBox="0 0 110 16"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <line
+                x1="0"
+                y1="8"
+                x2="95"
+                y2="8"
+                stroke="#c0392b"
+                stroke-width="2"
+              />
+              <polygon points="95,3 110,8 95,13" fill="#c0392b" />
+            </svg>
+            <div class="arrow-label">HTTP GET (wget)</div>
+          </div>
+          <div class="topo-node">
+            <div style="font-weight: bold; font-size: 11pt">Decoder</div>
+            <div class="node-label">Tải về & Khôi phục</div>
+            <div class="node-ip">Client</div>
+          </div>
+        </div>
+      </div>
+
+      <h2>3. Kiến thức bổ trợ</h2>
+      <h3>Giấu tin trên Miền dự đoán (Prediction Domain Steganography)</h3>
+      <p>
+        Trong VP9, để tiết kiệm dung lượng, luồng bitstream không lưu trực tiếp
+        mọi Vector mà lưu "độ lệch" so với các vector lân cận đã được giải mã
+        trước đó. Bộ mã hóa tính toán một danh sách các dự đoán. Thuật toán của
+        chúng ta hoạt động theo nguyên tắc:
+      </p>
+      <ul>
+        <li>
+          Gán bit <code>0</code> bằng cách ép bộ mã hóa chọn chế độ dự đoán
+          <code>nearest</code> (ứng viên gần nhất).
+        </li>
+        <li>
+          Gán bit <code>1</code> bằng cách ép bộ mã hóa chọn chế độ dự đoán
+          <code>near</code> (ứng viên gần tiếp theo).
+        </li>
+      </ul>
+      <h3>Bảng tùy chọn công cụ</h3>
+      <table>
+        <tr>
+          <th>Công cụ</th>
+          <th>Tùy chọn / Cú pháp</th>
+          <th>Mô tả tác dụng</th>
+        </tr>
+        <tr>
+          <td><code>ffmpeg</code></td>
+          <td><code>-hide_banner -i</code></td>
+          <td>Kiểm tra thông tin định dạng, codec của file video đầu vào.</td>
+        </tr>
+        <tr>
+          <td><code>python3</code></td>
+          <td><code>*.py</code></td>
+          <td>
+            Chạy các công cụ trích xuất, nhúng vào bộ dự đoán (predictor) và
+            giải mã thông điệp.
+          </td>
+        </tr>
+        <tr>
+          <td><code>http.server</code></td>
+          <td><code>-m http.server 1234</code></td>
+          <td>Khởi tạo máy chủ web nội bộ để phân phối tệp video stego.</td>
+        </tr>
+        <tr>
+          <td><code>wget</code></td>
+          <td><code>http://encoder:1234/...</code></td>
+          <td>
+            Công cụ phía máy trạm (Decoder) để tải tệp tin từ máy chủ Encoder về
+            máy cục bộ.
+          </td>
+        </tr>
+      </table>
+
+      <h2>4. Tải và khởi động Lab</h2>
+      <p>Chạy lệnh sau để tải bài thực hành xuống thiết bị:</p>
+      <pre><span class="cmd">imodule https://github.com/cmdie0113/steganography-labtainer/raw/refs/heads/main/vp9-mv-predictor-steg.tar</span></pre>
+      <p>
+        Khởi động lab (Sẽ tự động mở <strong>2 cửa sổ Terminal</strong> cho
+        Encoder và Decoder):
+      </p>
+      <pre><span class="cmd">labtainer -r vp9-mv-predictor-steg</span></pre>
+
+      <h2>5. Các nhiệm vụ của bài thực hành</h2>
+      <div class="box box-warning">
+        <strong>LƯU Ý QUAN TRỌNG:</strong> Quan sát kỹ dấu nhắc lệnh (prompt) để
+        gõ đúng lệnh tương ứng vào cửa sổ <code>encoder</code> hoặc
+        <code>decoder</code>.
+      </div>
+
+      <div class="box box-warning">
+        <strong>Quy trình chung của bài:</strong><br /><code
+          >Trích xuất Vector</code
+        >
+        → <code>Nhúng tin (Predictor)</code> → <code>Đóng gói Video</code> →
+        <code>Phân phối qua HTTP</code> → <code>Tải & Giải mã</code>
+      </div>
+
+      <div class="task-block">
+        <div class="task-header">
+          <span>Nhiệm vụ 1 — Kiểm tra đầu vào video gốc</span>
+          <span class="machine-tag">MÁY ENCODER</span>
+        </div>
+        <div class="task-body">
+          <p>
+            <strong>Mục đích:</strong> Sử dụng FFmpeg để phân tích các thông số
+            cơ bản của video gốc làm cơ sở cho các bước can thiệp.
+          </p>
+          <p>
+            <strong>Bước 1:</strong> Kiểm tra thông số của file video đầu vào
+            <code>input.webm</code>.
+          </p>
+          <pre><span class="cmd">ffmpeg -hide_banner -i input.webm</span></pre>
+
+          <p><strong>Kết quả cần thấy:</strong></p>
+          <pre>
+Input #0, matroska,webm, from 'input.webm':
+  Metadata:
+    COMPATIBLE_BRANDS: isomav01iso2mp41
+    MAJOR_BRAND     : isom
+    MINOR_VERSION   : 512
+    ENCODER         : Lavf61.7.100
+  Duration: 00:00:15.71, start: -0.007000, bitrate: 19922 kb/s
+    Stream #0:0: Video: vp9 (Profile 0), yuv420p(tv, bt709, progressive), 1920x1080, SAR 1:1 DAR 16:9, 30 fps, 30 tbr, 1k tbn, 1k tbc (default)</pre
+          >
+        </div>
+      </div>
+
+      <div class="task-block">
+        <div class="task-header">
+          <span>Nhiệm vụ 2 — Trích xuất dữ liệu Motion Vector</span>
+          <span class="machine-tag">MÁY ENCODER</span>
+        </div>
+        <div class="task-body">
+          <p>
+            <strong>Mục đích:</strong> Bóc tách luồng khung hình, đánh giá các
+            bộ dự đoán và lưu mảng JSON chứa các `candidates` vào file
+            <code>mv_candidates.json</code>.
+          </p>
+
+          <p>
+            <strong>Bước 1:</strong> Đọc mã nguồn của script trích xuất để hiểu
+            cách hệ thống bóc tách dữ liệu VP9.
+          </p>
+          <pre><span class="cmd">cat vp9_extractor.py</span></pre>
+
+          <p>
+            <strong>Bước 2:</strong> Chạy script để trích xuất các vector chuyển
+            động từ file video.
+          </p>
+          <pre><span class="cmd">python3 vp9_extractor.py</span></pre>
+
+          <p><strong>Kết quả cần thấy:</strong></p>
+          <pre>
+[+] Extracting VP9 motion vector predictors...
+[+] Extracted [Số_lượng] predictor candidates
+[+] Saved to mv_candidates.json</pre
+          >
+        </div>
+      </div>
+
+      <div class="task-block">
+        <div class="task-header">
+          <span>Nhiệm vụ 3 — Nhúng thông điệp (Encode)</span>
+          <span class="machine-tag">MÁY ENCODER</span>
+        </div>
+
+        <div class="task-body">
+          <p>
+            <strong>Mục đích:</strong> Máy sẽ đọc thông điệp từ
+            <code>secret.py</code>, chuyển thành chuỗi nhị phân, và ánh xạ từng
+            bit này vào việc lựa chọn tham số <code>predictor</code> (giữa
+            <code>nearest</code> và <code>near</code>), xuất file cấu hình
+            <code>mv_choices.json</code>.
+          </p>
+
+          <p>
+            <strong>Bước 1:</strong> Xem mã nguồn thuật toán để nắm rõ logic can
+            thiệp vào Predictor Mode.
+          </p>
+          <pre><span class="cmd">cat encode.py</span></pre>
+
+          <p><strong>Bước 2:</strong> Tiến hành nhúng thông điệp</p>
+          <pre><span class="cmd">python3 encode.py</span></pre>
+
+          <p><strong>Kết quả cần thấy:</strong></p>
+          <pre>
+[+] Embedded 88 bits
+[+] Output saved to mv_choices.json</pre
+          >
+        </div>
+      </div>
+
+      <div class="task-block">
+        <div class="task-header">
+          <span>Nhiệm vụ 4 — Đóng gói Video (Repack)</span>
+          <span class="machine-tag">MÁY ENCODER</span>
+        </div>
+        <div class="task-body">
+          <p>
+            <strong>Mục đích:</strong> Lồng ghép phụ lục danh sách quyết định dự
+            đoán (mv_choices.json) vào định dạng file WebM để tạo file thành
+            phẩm.
+          </p>
+
+          <p><strong>Bước 1:</strong> Đọc mã nguồn tái cấu trúc video.</p>
+          <pre><span class="cmd">cat repack_video.py</span></pre>
+
+          <p>
+            <strong>Bước 2:</strong> Đóng gói lại trở lại thành một file video
+            stego hoàn chỉnh (<code>stego_video.webm</code>).
+          </p>
+          <pre><span class="cmd">python3 repack_video.py</span></pre>
+
+          <p><strong>Kết quả cần thấy:</strong></p>
+          <pre>
+[+] Repacking VP9 stego video...
+[+] Stego video created
+[+] Output: stego_video_dir.webm</pre
+          >
+        </div>
+      </div>
+
+      <div class="task-block">
+        <div class="task-header">
+          <span>Nhiệm vụ 5 - Thiết lập cổng phân phối HTTP</span>
+          <span class="machine-tag">MÁY ENCODER</span>
+        </div>
+        <div class="task-body">
+          <p>
+            <strong>Mục đích:</strong> Khởi tạo nền tảng Web Server đơn giản
+            trên cổng TCP 1234 nhằm phục vụ việc tải tệp.
+          </p>
+
+          <p>
+            <strong>Bước 1:</strong> Gửi video lên Web Server đơn giản trên cổng
+            1234.
+          </p>
+          <pre><span class="cmd">python3 -m http.server 1234</span></pre>
+
+          <p><strong>Kết quả cần thấy:</strong></p>
+          <pre>
+Serving HTTP on 0.0.0.0 port 1234 (http://0.0.0.0:1234/) ...</pre
+          >
+        </div>
+      </div>
+
+      <div class="task-block">
+        <div class="task-header">
+          <span>Nhiệm vụ 6 — Tải tệp ẩn mã qua đường truyền IP</span>
+          <span class="machine-tag" style="background: #4caf50; color: white"
+            >MÁY DECODER</span
+          >
+        </div>
+        <div class="task-body">
+          <p>
+            <strong>Mục đích:</strong> Kết nối qua Socket, đóng vai trò Client
+            nhận tệp video từ máy chủ trung tâm.
+          </p>
+          <pre><span class="cmd">wget http://encoder:1234/stego_video_dir.webm</span></pre>
+        </div>
+      </div>
+
+      <div class="task-block">
+        <div class="task-header">
+          <span>Nhiệm vụ 7 — Dịch ngược thông điệp từ Miền Dự đoán</span>
+          <span class="machine-tag" style="background: #4caf50; color: white"
+            >MÁY DECODER</span
+          >
+        </div>
+        <div class="task-body">
+          <p>
+            <strong>Mục đích:</strong> Phân tích siêu dữ liệu đính kèm, ánh xạ
+            ngược từ trạng thái bộ dự đoán (<code>nearest</code> -> 0,
+            <code>near</code> -> 1) thành chuỗi bit và khôi phục văn bản.
+          </p>
+          <p><strong>Bước 1:</strong> Kiểm tra thuật toán giải mã.</p>
+          <pre><span class="cmd">cat decode.py</span></pre>
+
+          <p>
+            <strong>Bước 2:</strong> Tiến hành giải mã dữ liệu và lưu kết quả
+            đầu ra vào file <code>decode.stdout</code>.
+          </p>
+          <pre><span class="cmd">python3 decode.py > decode.stdout</span></pre>
+
+          <p><strong>Kết quả cần thấy:</strong></p>
+          <pre>
+(Không có thông báo hiển thị trên màn hình do output đã được chuyển hướng vào file decode.stdout)</pre
+          >
+        </div>
+      </div>
+
+      <div class="task-block">
+        <div class="task-header">
+          <span>Nhiệm vụ 8 — Kiểm tra độ vẹn toàn dữ liệu</span>
+          <span class="machine-tag" style="background: #4caf50; color: white"
+            >MÁY DECODER</span
+          >
+        </div>
+        <div class="task-body">
+          <p>
+            <strong>Mục đích:</strong> Xem nội dung đã được giải nén để đối
+            chiếu với thông điệp gốc.
+          </p>
+          <pre><span class="cmd">cat decode.stdout</span></pre>
+          <p><strong>Kết quả cần thấy:</strong></p>
+          <pre>
+[+] Hidden message recovered:
+ATTTD22PTIT</pre
+          >
+        </div>
+      </div>
+
+      <h2>6. Kiểm tra kết quả bài thực hành</h2>
+      <p>
+        Sử dụng cửa sổ Terminal (hoặc dừng server cục bộ) và chạy lệnh đánh giá:
+      </p>
+      <pre><span class="cmd">checkwork vp9-mv-predictor-steg</span></pre>
+      <p>
+        Kết quả kỳ vọng: Tích xanh <code>Y</code> hoàn thành toàn bộ chỉ tiêu.
+      </p>
+      <table>
+        <tr>
+          <th>Checkwork</th>
+          <th>Máy thực hiện</th>
+          <th>Ý nghĩa</th>
+        </tr>
+        <tr>
+          <td><code>check_info</code></td>
+          <td>Encoder</td>
+          <td>
+            Đã gọi lệnh kiểm tra thông số <code>banner -i input.webm</code>.
+          </td>
+        </tr>
+        <tr>
+          <td><code>run_extractor</code></td>
+          <td>Encoder</td>
+          <td>
+            Ghi nhận việc chạy mã nguồn <code>on3 vp9_extractor.py</code> thành
+            công.
+          </td>
+        </tr>
+        <tr>
+          <td><code>run_encoder</code></td>
+          <td>Encoder</td>
+          <td>
+            Xác nhận script <code>python3 encode.py</code> đã nhúng mã ngầm vào
+            file json.
+          </td>
+        </tr>
+        <tr>
+          <td><code>run_repack</code></td>
+          <td>Encoder</td>
+          <td>Thực thi đóng gói video <code>on3 repack_video.py</code>.</td>
+        </tr>
+        <tr>
+          <td><code>run_server</code></td>
+          <td>Encoder</td>
+          <td>
+            Kích hoạt thành công cổng Host <code>3 -m http.server 1234</code>.
+          </td>
+        </tr>
+        <tr>
+          <td><code>run_download</code></td>
+          <td>Decoder</td>
+          <td>Phát hiện truy vấn <code>wget</code> lưu file xuống máy trạm.</td>
+        </tr>
+        <tr>
+          <td><code>run_decoder</code></td>
+          <td>Decoder</td>
+          <td>Tiến hành khôi phục <code>e.py > decode.stdout</code>.</td>
+        </tr>
+        <tr>
+          <td><code>found_secret</code></td>
+          <td>Decoder</td>
+          <td>Dịch ngược thành công chuỗi mật mã <code>ATTTD22PTIT</code>.</td>
+        </tr>
+      </table>
+
+      <div class="box box-success" style="margin-top: 18px">
+        <strong>Kết luận:</strong><br />
+        Bài lab mang đến giải pháp trong lĩnh vực bảo mật dữ liệu đa phương
+        tiện. Thay vì sửa đổi tọa độ vật lý gây sai lệch kết xuất, việc tác động
+        vào thuật toán Bộ dự đoán (Predictor) trong VP9 chứng minh Steganography
+        hoàn toàn có thể đạt tới ngưỡng vô hình tuyệt đối về mặt thị giác mà vẫn
+        đảm bảo được luồng kênh thông tin (Covert channel) ổn định và vẹn toàn
+        giữa hai đầu cuối mạng.
+      </div>
+
+      <div class="footer">
+        Học viện Công nghệ Bưu chính Viễn thông — SecLab PTIT<br />
+        Bài thực hành được xây dựng theo mô hình Labtainer, phục vụ mục đích học
+        tập và nghiên cứu an toàn thông tin.
+      </div>
+    </main>
+  </body>
+</html>
